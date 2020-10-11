@@ -1,0 +1,28 @@
+language: generic
+sudo required
+services:
+  - docker
+
+before_install:
+  - docker build -t sathyapraba/react-test-two -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true sathyapraba/react-test-two npm test -- --coverage
+
+after_success:
+  - docker build -t sathyapraba/multi-client ./client
+  - docker build -t sathyapraba/multi-nginx ./nginx
+  - docker build -t sathyapraba/multi-server ./server
+  - docker build -t sathyapraba/multi-server ./worker
+
+#Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+# Take those images and push them to docker cli
+  - docker push sathyapraba/multi-client 
+  - docker push sathyapraba/multi-nginx 
+  - docker push sathyapraba/multi-server 
+  - docker push sathyapraba/multi-worker 
+ 
+
+
